@@ -162,7 +162,7 @@ if (1) {
 
     Hashi hashi;
     uint32_t ikeys[uni_chars+1]; // static ikeys[64+1] ??
-    bv_bits bits[uni_chars+1]; // static ikeys[64+1] ??
+    bv_bits bits[uni_chars+1];   // static ikeys[64+1] ??
     hashi.ikeys = ikeys;
     hashi.bits  = bits;
 
@@ -219,7 +219,7 @@ dist_simple( const uint32_t *a, int alen, const uint32_t *b, int blen ) {
     int bmin = 0;
     int bmax = blen-1;
 
-if (0) {
+if (1) {
     while (amin <= amax && bmin <= bmax && a[amin] == b[bmin]) {
         amin++;
         bmin++;
@@ -258,11 +258,11 @@ if (0) {
 	// if (name == 0)
     // fatal ("virtual memory exceeded");
 
-    int *prev = malloc(2 * (n + 1) * sizeof(int));
+    //int *prev = malloc(2 * (n + 1) * sizeof(int));
+    int *prev = (int *) malloc(2 * (n + 1) * sizeof(int));
 	//int *prev_alloc;
 	int *curr;
 	int *temp;
-	//prev = (int *) malloc(2 * (n + 1) * sizeof(int));
 	curr = prev + (n + 1);
 
 	for (j = 0; j <= n; j++) { prev[j] = j; }
@@ -416,7 +416,7 @@ else {
 	// if (name == 0)
     // fatal ("virtual memory exceeded");
 
-    int *prev = malloc(2 * (n + 1) * sizeof(int));
+    int *prev = (int *)malloc(2 * (n + 1) * sizeof(int));
 	//int *prev_alloc;
 	int *curr;
 	int *temp;

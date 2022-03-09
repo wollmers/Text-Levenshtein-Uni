@@ -327,3 +327,16 @@ helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtest
 [dist_simple]   iters: 20 M Elapsed: 2.977173 s Rate: 6.7 (M/sec) 4
 Total: 6.909637 seconds
 
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtestcpp
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_hybrid]   distance: 4 expect: 4
+[dist_mixed]    distance: 4 expect: 4
+[dist_simple]   distance: 4 expect: 4
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.888937 s Rate: 10.6 (M/sec) 4
+[dist_hybrid]   iters: 20 M Elapsed: 0.989074 s Rate: 20.2 (M/sec) 4
+[dist_hybrid]   iters: 20 M Elapsed: 0.995838 s Rate: 20.1 (M/sec) 4
+[dist_mixed]    iters: 20 M Elapsed: 1.037983 s Rate: 19.3 (M/sec) 4
+[dist_simple]   iters: 20 M Elapsed: 2.336609 s Rate: 8.6 (M/sec) 4
+Total: 7.248441 seconds
+
+
