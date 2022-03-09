@@ -1,0 +1,12 @@
+Changes
+Makefile.PL
+MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
+ppport.h
+README
+README.md
+t/10_basic_distance.t
+lib/Text/Levenshtein/Uni.pm
+lib/Text/Levenshtein/Uni.xs
+src/levbv.h
+src/levbv.c
