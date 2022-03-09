@@ -109,7 +109,8 @@ int dist_utf8_ucs (char * a, uint32_t alen, char * b, uint32_t blen) {
     b_chars = u8_toucs(b_ucs, (blen+1)*4, b, blen);
 
     int diff;
-    diff = dist_hybrid(a_ucs, a_chars, b_ucs, b_chars);
+    //diff = dist_hybrid(a_ucs, a_chars, b_ucs, b_chars);
+    diff = dist_mixed(a_ucs, a_chars, b_ucs, b_chars);
 
     return diff;
 }
@@ -258,9 +259,9 @@ if (1) {
 	// if (name == 0)
     // fatal ("virtual memory exceeded");
 
-    //int *prev = malloc(2 * (n + 1) * sizeof(int));
-    int *prev = (int *) malloc(2 * (n + 1) * sizeof(int));
-	//int *prev_alloc;
+    int *prev = (int *)malloc(2 * (n + 1) * sizeof(int));
+	int *prev_alloc;
+	prev_alloc = prev;
 	int *curr;
 	int *temp;
 	curr = prev + (n + 1);
@@ -297,7 +298,7 @@ if (1) {
 	 */
 	distance = prev[n];
 
-    if(prev) { free(prev); }
+    if(prev) { free( prev_alloc ); }
 
     return distance;
 }
@@ -417,10 +418,10 @@ else {
     // fatal ("virtual memory exceeded");
 
     int *prev = (int *)malloc(2 * (n + 1) * sizeof(int));
-	//int *prev_alloc;
+	int *prev_alloc;
+	prev_alloc = prev;
 	int *curr;
 	int *temp;
-	//prev = (int *) malloc(2 * (n + 1) * sizeof(int));
 	curr = prev + (n + 1);
 
 	for (j = 0; j <= n; j++) { prev[j] = j; }
@@ -455,7 +456,7 @@ else {
 	 */
 	distance = prev[n];
 
-    if(prev) { free(prev); }
+    if ( prev ) { free(prev_alloc); }
 
     return distance;
   } // end simple

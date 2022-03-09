@@ -13,7 +13,7 @@ binmode(STDERR,":encoding(UTF-8)");
 use Test::More;
 use Test::More::UTF8;
 
-use Text::Levenshtein::BVXS;
+use Text::Levenshtein::Uni;
 use Text::Levenshtein;
 
 #use Text::Levenshtein::XS qw(distance);
@@ -128,10 +128,10 @@ if (1) {
     my $m = scalar @a;
     my $n = scalar @b;
 
-    my $distance = &Text::Levenshtein::distance($A,$B);
+    my $distance = distance($A,$B);
 
     is(
-      &Text::Levenshtein::BVXS::distance($A,$B),
+      &Text::Levenshtein::Uni::distance($A,$B),
       #distance($A,$B),
       $distance,
 
@@ -141,7 +141,7 @@ if (1) {
   }
 }
 
-if (0) {
+if (1) {
   for my $example (@$examples2) {
     my $a = $example->[0];
     my $b = $example->[1];
@@ -155,7 +155,7 @@ if (0) {
     my $distance = distance($A,$B);
 
     is(
-      Text::Levenshtein::BV->distance(\@a,\@b),
+      &Text::Levenshtein::Uni::distance($A,$B),
       #distance($A,$B),
       $distance,
 
@@ -177,10 +177,10 @@ if (1) {
     my $m = scalar @a;
     my $n = scalar @b;
 
-    my $distance = &Text::Levenshtein::distance($A,$B);
+    my $distance = distance($A,$B);
 
     is(
-      &Text::Levenshtein::BVXS::distance($A,$B),
+      &Text::Levenshtein::Uni::distance($A,$B),
       #distance($A,$B),
       $distance,
 
@@ -191,7 +191,7 @@ if (1) {
 }
 
 # test prefix-suffix optimization
-if (0) {
+if (1) {
   my $prefix = 'a';
   my $infix  = 'b';
   my $suffix = 'c';
@@ -215,19 +215,21 @@ if (0) {
       my $m = scalar @a;
       my @b = split(//,$b);
       my $n = scalar @b;
+      my $A = join('',@a);
+      my $B = join('',@b);
 
       is(
-        Text::Levenshtein::BV->distance(\@a,\@b),
-        distance(\@a,\@b),
+        &Text::Levenshtein::Uni::distance($A,$B),
+        distance($A,$B),
 
-        "[$a] m: $m, [$b] n: $n -> " . distance(\@a,\@b)
+        "[$a] m: $m, [$b] n: $n -> " . distance($A,$B)
       );
     }
   }
 }
 
 # test error-by-one
-if (0) {
+if (1) {
   my $string1 = 'a';
   my $string2 = 'b';
   my @base_lengths = (16, 32, 64, 128, 256);
@@ -239,18 +241,20 @@ if (0) {
       my $m = scalar @a;
       my @b = split(//, $string2 x $mult);
       my $n = scalar @b;
+      my $A = join('',@a);
+      my $B = join('',@b);
       is(
-        Text::Levenshtein::BV->distance(\@a,\@b),
-        distance(\@a,\@b),
+        &Text::Levenshtein::Uni::distance($A,$B),
+        distance($A,$B),
 
-        "[$string1 x $mult] m: $m, [$string2 x $mult] n: $n -> " . distance(\@a,\@b)
+        "[$string1 x $mult] m: $m, [$string2 x $mult] n: $n -> " . distance($A,$B)
        );
     }
   }
 }
 
 # test carry for possible machine words
-if (0) {
+if (1) {
   my $string1 = 'abd';
   my $string2 = 'badc';
   my @base_lengths = (16, 32, 64, 128, 256);
@@ -263,11 +267,14 @@ if (0) {
       my $mult2 = int($base_length2/length($string2)) + 1;
       my @b = split(//,$string2 x $mult2);
       my $n = scalar @b;
-      is(
-        Text::Levenshtein::BV->distance(\@a,\@b),
-        distance(\@a,\@b),
+      my $A = join('',@a);
+      my $B = join('',@b);
 
-        "[$string1 x $mult1] m: $m, [$string2 x $mult2] n: $n -> " . distance(\@a,\@b)
+      is(
+        &Text::Levenshtein::Uni::distance($A,$B),
+        distance($A,$B),
+
+        "[$string1 x $mult1] m: $m, [$string2 x $mult2] n: $n -> " . distance($A,$B)
       );
     }
   }
@@ -278,7 +285,7 @@ my @data3 = ([qw/a b d/ x 50], [qw/b a d c/ x 50]);
 
 if (0) {
   is(
-    Text::Levenshtein::BV->distance(@data3),
+    &Text::Levenshtein::Uni::distance(@data3),
     distance(@data3),
 
     '[qw/a b d/ x 50], [qw/b a d c/ x 50] -> ' . distance(@data3)

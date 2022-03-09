@@ -19,7 +19,8 @@ use Benchmark qw(:all) ;
 use Data::Dumper;
 
 #use Text::Levenshtein::BV;
-use Text::Levenshtein::BVXS;
+#use Text::Levenshtein::BVXS;
+use Text::Levenshtein::Uni;
 #use Text::Levenshtein::XS qw(distance);
 use Text::Levenshtein::XS;
 use Text::Levenshtein;
@@ -78,14 +79,14 @@ my $tf_uni   = Text::Fuzzy->new($data_uni[0]);
 
 if (1) {
     cmpthese( -1, {
-       'TL::BVXS_ascii' => sub {
-            Text::Levenshtein::BVXS::distance(@strings_ascii)
+       'TL::Uni_ascii' => sub {
+            Text::Levenshtein::Uni::distance(@strings_ascii)
         },
-       'TL::BVXS_uni' => sub {
-            Text::Levenshtein::BVXS::distance(@strings_uni)
+       'TL::Uni_uni' => sub {
+            Text::Levenshtein::Uni::distance(@strings_uni)
         },
-       'TL::BVXS_l52' => sub {
-            Text::Levenshtein::BVXS::distance(@strings2)
+       'TL::Uni_l52' => sub {
+            Text::Levenshtein::Uni::distance(@strings2)
         },
         'TL::Flex_ascii' => sub {
             &Text::Levenshtein::Flexible::levenshtein(@strings_ascii)
@@ -339,4 +340,11 @@ helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtestcpp
 [dist_simple]   iters: 20 M Elapsed: 2.336609 s Rate: 8.6 (M/sec) 4
 Total: 7.248441 seconds
 
-
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni$ perl xt/50_distance_bench.t
+                    Rate TL::Flex_l52 TL::Uni_l52 TL::Flex_uni TL::Flex_ascii TL::Uni_uni TL::Uni_ascii
+TL::Flex_l52    225467/s           --        -90%         -91%           -94%        -97%          -97%
+TL::Uni_l52    2184532/s         869%          --         -15%           -41%        -73%          -74%
+TL::Flex_uni   2572440/s        1041%         18%           --           -30%        -68%          -69%
+TL::Flex_ascii 3674916/s        1530%         68%          43%             --        -54%          -56%
+TL::Uni_uni    8065969/s        3477%        269%         214%           119%          --           -4%
+TL::Uni_ascii  8385413/s        3619%        284%         226%           128%          4%            --

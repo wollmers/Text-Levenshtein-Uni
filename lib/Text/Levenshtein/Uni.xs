@@ -40,7 +40,7 @@ dist_any (SV *s1, SV *s2)
   return dist;
 }
 
-MODULE = Text::Levenshtein::BVXS  PACKAGE = Text::Levenshtein::BVXS
+MODULE = Text::Levenshtein::Uni  PACKAGE = Text::Levenshtein::Uni
 
 int
 distance(s1, s2)
