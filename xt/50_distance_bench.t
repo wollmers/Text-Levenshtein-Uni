@@ -295,4 +295,35 @@ helmut@mbp:~/github/perl/Text-Levenshtein-BVXS/src$ ./levtestcpp
 [dist_hybrid]   iters: 20 M Elapsed: 0.948328 s Rate: 21.1 (M/sec) 4
 Total: 4.720276 seconds
 
+# simple with pre-/suffix
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtest
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_hybrid]   distance: 4 expect: 4
+[dist_simple]   distance: 4 expect: 4
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.777167 s Rate: 11.3 (M/sec) 4
+[dist_hybrid]   iters: 20 M Elapsed: 0.966135 s Rate: 20.7 (M/sec) 4
+[dist_simple]   iters: 20 M Elapsed: 2.193030 s Rate: 9.1 (M/sec) 4
+Total: 4.936332 seconds
+
+# simple without pre-/suffix
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtest
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_hybrid]   distance: 4 expect: 4
+[dist_simple]   distance: 4 expect: 4
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.853366 s Rate: 10.8 (M/sec) 4
+[dist_hybrid]   iters: 20 M Elapsed: 1.010987 s Rate: 19.8 (M/sec) 4
+[dist_simple]   iters: 20 M Elapsed: 3.219757 s Rate: 6.2 (M/sec) 4
+Total: 6.084110 seconds
+
+# mixed
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtest
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_hybrid]   distance: 4 expect: 4
+[dist_mixed]    distance: 4 expect: 4
+[dist_simple]   distance: 4 expect: 4
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.888164 s Rate: 10.6 (M/sec) 4
+[dist_hybrid]   iters: 20 M Elapsed: 1.016698 s Rate: 19.7 (M/sec) 4
+[dist_mixed]    iters: 20 M Elapsed: 1.027602 s Rate: 19.5 (M/sec) 4
+[dist_simple]   iters: 20 M Elapsed: 2.977173 s Rate: 6.7 (M/sec) 4
+Total: 6.909637 seconds
 
