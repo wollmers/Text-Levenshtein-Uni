@@ -201,19 +201,18 @@ if ( 1 && ((amax - amin) < width) ) {
     hashi.ikeys = ikeys;
     hashi.bits  = bits;
 
-if (uni_chars > 0) {
-    //int32_t i;
-    for (i=0; i <= uni_chars; i++) {
-        hashi.ikeys[i] = 0;
-        hashi.bits[i]  = 0;
-    }
+    if (uni_chars > 0) {
+        for (i=0; i <= uni_chars; i++) {
+            hashi.ikeys[i] = 0;
+            hashi.bits[i]  = 0;
+        }
 
-    for (i=0; i < m; i++) {
-        if (a[i+amin] >= low_chars) {
-            hashi_setpos (&hashi, a[i+amin], i);
+        for (i=0; i < m; i++) {
+            if (a[i+amin] >= low_chars) {
+                hashi_setpos (&hashi, a[i+amin], i);
+            }
         }
     }
-}
 
     int diff = m;
     bv_bits mask = 0x1ull << (m - 1);
