@@ -348,3 +348,57 @@ TL::Flex_uni   2572440/s        1041%         18%           --           -30%   
 TL::Flex_ascii 3674916/s        1530%         68%          43%             --        -54%          -56%
 TL::Uni_uni    8065969/s        3477%        269%         214%           119%          --           -4%
 TL::Uni_ascii  8385413/s        3619%        284%         226%           128%          4%            --
+
+$ ./levtestcpp
+strlen(utf_str1): 10
+strlen(utf_str2): 13
+a_string.size(): 10
+b_string.size(): 11
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_mixed]    distance: 4 expect: 4
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.919418 s Rate: 10.4 (M/sec) 4
+[dist_mixed]    iters: 20 M Elapsed: 1.093002 s Rate: 18.3 (M/sec) 4
+Total: 3.012420 seconds
+
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni/src$ ./levtest
+sizeof(int): 4
+
+[dist_utf8_ucs] distance: 4 expect: 4
+[dist_mixed]    distance: 4 expect: 4
+
+strlen(utf_str1_l52): 51
+strlen(utf_str2_l52): 51
+a_chars_l52: 51
+b_chars_l52: 51
+[dist_mixed_l52] distance: 2 expect: 2
+
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.978637 s Rate: 10.1 (M/sec) 4
+[dist_mixed]    iters: 20 M Elapsed: 1.113225 s Rate: 18.0 (M/sec) 4
+[dist_mixed_l52] iters: 20 M Elapsed: 5.180744 s Rate: 3.9 (M/sec) 2
+Total: 8.272606 seconds
+
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni$ perl xt/50_distance_bench.t
+                    Rate TL::Flex_l52 TL::Uni_l52 TL::Flex_uni TL::Flex_ascii TL::Uni_ascii TL::Uni_uni
+TL::Flex_l52    218453/s           --        -90%         -91%           -94%          -97%        -97%
+TL::Uni_l52    2248783/s         929%          --          -7%           -39%          -71%        -71%
+TL::Flex_uni   2429401/s        1012%          8%           --           -34%          -68%        -69%
+TL::Flex_ascii 3679213/s        1584%         64%          51%             --          -52%        -53%
+TL::Uni_ascii  7699334/s        3424%        242%         217%           109%            --         -2%
+TL::Uni_uni    7864320/s        3500%        250%         224%           114%            2%          --
+
+# without init if no unichars
+$ ./levtest
+
+[dist_utf8_ucs] iters: 20 M Elapsed: 1.842317 s Rate: 10.9 (M/sec) 4
+[dist_mixed]    iters: 20 M Elapsed: 0.941020 s Rate: 21.3 (M/sec) 4
+[dist_mixed_l52] iters: 20 M Elapsed: 4.662726 s Rate: 4.3 (M/sec) 2
+Total: 7.446063 seconds
+
+helmut@mbp:~/github/perl/Text-Levenshtein-Uni$ perl xt/50_distance_bench.t
+                    Rate TL::Flex_l52 TL::Uni_l52 TL::Flex_uni TL::Flex_ascii TL::Uni_uni TL::Uni_ascii
+TL::Flex_l52    214369/s           --        -91%         -91%           -94%        -97%          -97%
+TL::Uni_l52    2293759/s         970%          --          -1%           -39%        -69%          -72%
+TL::Flex_uni   2316929/s         981%          1%           --           -38%        -69%          -72%
+TL::Flex_ascii 3744914/s        1647%         63%          62%             --        -50%          -54%
+TL::Uni_uni    7419170/s        3361%        223%         220%            98%          --           -9%
+TL::Uni_ascii  8143526/s        3699%        255%         251%           117%         10%            --

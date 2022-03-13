@@ -16,7 +16,7 @@ extern "C" {
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "levbv.h"
+//#include "levbv.h"
 
 #include "utf8.h"
 #include "utf8.c"
@@ -24,13 +24,38 @@ extern "C" {
 // width of type bv_bits in bits, mostly 64 bits
 static const uint64_t width = _LEVBV_WIDTH;
 
+//https://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
+
+//#define _LEVBV_DEBUG
+#ifdef _LEVBV_DEBUG
+
+#define kDisplayWidth 64
+
+char* pBinFill( long int x, char *so, char fillChar) {
+    char s[ kDisplayWidth + 1 ];
+    int  i = kDisplayWidth;
+    s[i--] = 0x00;   // terminate string
+
+    do { // fill in array from right to left
+        s[i--] = (x & 1) ? '1':'0';
+        x >>= 1;  // shift right 1 bit
+    } while ( x > 0 );
+    while ( i >= 0 ) s[i--] = fillChar;    // fill with fillChar
+    sprintf( so, "%s", s );
+    return so;
+}
+//printf("%ld =\t\t%#lx =\t\t0b%s\n",val,val,pBinFill(val,so,'0'));
+#endif
+
+
 /***** Hashi *****/
 
 typedef struct {
     uint32_t *ikeys;
-    bv_bits *bits;
+    bv_bits  *bits;
 } Hashi;
 
+// sequential search is faster than hash for n < 50
 
 inline void hashi_setpos (Hashi *hashi, uint32_t key, uint32_t pos) {
     int index = 0;
@@ -44,7 +69,6 @@ inline void hashi_setpos (Hashi *hashi, uint32_t key, uint32_t pos) {
     hashi->bits[index] |= 0x1ull << (pos % _LEVBV_WIDTH);
 }
 
-
 inline uint64_t hashi_getpos (Hashi *hashi, uint32_t key) {
     int index = 0;
     while ( hashi->ikeys[index]
@@ -55,7 +79,7 @@ inline uint64_t hashi_getpos (Hashi *hashi, uint32_t key) {
 }
 
 /************************/
-
+/*
 static const char allBytesForUTF8[256] = {
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -66,7 +90,7 @@ static const char allBytesForUTF8[256] = {
     2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
     3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, 4,4,4,4,4,4,4,4,5,5,5,5,6,6,6,6
 };
-
+*/
 /************************/
 
 
@@ -74,7 +98,7 @@ static const char allBytesForUTF8[256] = {
 /***********************/
 
 static const uint64_t masks[64] = {
-  //0x0000000000000000,
+  //0x0000000000000000ull,
   0x0000000000000001ull,0x0000000000000003ull,0x0000000000000007ull,0x000000000000000full,
   0x000000000000001full,0x000000000000003full,0x000000000000007full,0x00000000000000ffull,
   0x00000000000001ffull,0x00000000000003ffull,0x00000000000007ffull,0x0000000000000fffull,
@@ -97,8 +121,8 @@ static const uint64_t masks[64] = {
     #define _LEVBV_LOW_CHARS 128
 #endif
 
-// utf-8 to UCS-4 wrapper for dist_hybrid
-int dist_utf8_ucs (char * a, uint32_t alen, char * b, uint32_t blen) {
+// utf-8 to UCS-4 wrapper
+int dist_utf8_ucs (char * a, int alen, char * b, int blen) {
 
     uint32_t a_ucs[(alen+1)*4];
     uint32_t b_ucs[(blen+1)*4];
@@ -109,199 +133,14 @@ int dist_utf8_ucs (char * a, uint32_t alen, char * b, uint32_t blen) {
     b_chars = u8_toucs(b_ucs, (blen+1)*4, b, blen);
 
     int diff;
-    //diff = dist_hybrid(a_ucs, a_chars, b_ucs, b_chars);
     diff = dist_mixed(a_ucs, a_chars, b_ucs, b_chars);
 
     return diff;
 }
 
-
-// use uni codepoints as uint32_t key
-// or ascii table
-int dist_hybrid (const uint32_t *a, int alen, const uint32_t *b, int blen) {
-
-    int amin = 0;
-    int amax = alen-1;
-    int bmin = 0;
-    int bmax = blen-1;
-
-if (1) {
-    while (amin <= amax && bmin <= bmax && a[amin] == b[bmin]) {
-        amin++;
-        bmin++;
-    }
-    while (amin <= amax && bmin <= bmax && a[amax] == b[bmax]) {
-        amax--;
-        bmax--;
-    }
-}
-
-    // if one of the sequences is a complete subset of the other,
-    // return difference of lengths.
-    if ((amax < amin) || (bmax < bmin)) { return abs(alen - blen); }
-
-    int m = amax-amin + 1;
-
-
-    // for codepoints in the low range we use fast table lookup
-    int low_chars = _LEVBV_LOW_CHARS;
-    static bv_bits posbits[_LEVBV_LOW_CHARS] = { 0 };
-    uint64_t i;
-
-    for (i=0; i < low_chars; i++) { posbits[i] = 0; }
-
-    int ascii_chars = 0;
-    for (i=0; i < m; i++) {
-        if (a[i+amin] < low_chars) {
-            posbits[(unsigned int)a[i+amin]] |= 0x1ull << i;
-            ascii_chars++;
-        }
-    }
-
-    // for codepoints in the high range we use sequential search
-    int uni_chars = m - ascii_chars;
-
-    Hashi hashi;
-    uint32_t ikeys[uni_chars+1]; // static ikeys[64+1] ??
-    bv_bits bits[uni_chars+1];   // static ikeys[64+1] ??
-    hashi.ikeys = ikeys;
-    hashi.bits  = bits;
-
-    //int32_t i;
-    for (i=0; i <= uni_chars; i++) {
-        hashi.ikeys[i] = 0;
-        hashi.bits[i]  = 0;
-    }
-
-    for (i=0; i < m; i++) {
-        if (a[i+amin] >= low_chars) {
-            hashi_setpos (&hashi, a[i+amin], i);
-        }
-    }
-
-    int diff = m;
-    bv_bits mask = 1 << (m - 1);
-    bv_bits VP   = masks[m - 1];
-    bv_bits VN   = 0;
-
-    int n = bmax-bmin +1;
-
-    bv_bits y;
-    for (i=0; i < n; i++){
-        if (b[i+bmin] < _LEVBV_LOW_CHARS) {
-            y = posbits[(unsigned int)b[i+bmin]];
-        }
-        else {
-            y = hashi_getpos (&hashi, b[i+bmin]);
-        }
-        bv_bits X  = y | VN;
-        bv_bits D0 = ((VP + (X & VP)) ^ VP) | X;
-        bv_bits HN = VP & D0;
-        bv_bits HP = VN | ~(VP|D0);
-        X  = (HP << 1) | 1;
-        VN = X & D0;
-        VP = (HN << 1) | ~(X | D0);
-        if (HP & mask) { diff++; }
-        if (HN & mask) { diff--; }
-    }
-    return diff;
-
-}
-
-#define MAX_LEVENSHTEIN_STRLEN	16384
+#define MAX_LEVENSHTEIN_STRLEN    16384
 
 #define Min(x, y) ((x) < (y) ? (x) : (y))
-
-int
-dist_simple( const uint32_t *a, int alen, const uint32_t *b, int blen ) {
-
-    int amin = 0;
-    int amax = alen-1;
-    int bmin = 0;
-    int bmax = blen-1;
-
-if (1) {
-    while (amin <= amax && bmin <= bmax && a[amin] == b[bmin]) {
-        amin++;
-        bmin++;
-    }
-    while (amin <= amax && bmin <= bmax && a[amax] == b[bmax]) {
-        amax--;
-        bmax--;
-    }
-}
-
-    // if one of the sequences is a complete subset of the other,
-    // return difference of lengths.
-    if ((amax < amin) || (bmax < bmin)) { return abs(alen - blen); }
-
-    int m = amax - amin + 1;
-    int n = bmax - bmin + 1;
-
-	int i, j;
-
-    int distance;
-
-	/*
-	if (m > MAX_LEVENSHTEIN_STRLEN ||
-		n > MAX_LEVENSHTEIN_STRLEN)
-	{
-      // croak("argument exceeds the maximum length of %d bytes", MAX_LEVENSHTEIN_STRLEN);
-        ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("levenshtein argument exceeds maximum length of %d characters",
-						MAX_LEVENSHTEIN_STRLEN)));
-    }
-    */
-
-	/* Previous and current rows of notional array. */
-	// char *name = malloc (strlen (str1) + strlen (str2) + 1);
-	// if (name == 0)
-    // fatal ("virtual memory exceeded");
-
-    int *prev = (int *)malloc(2 * (n + 1) * sizeof(int));
-	int *prev_alloc;
-	prev_alloc = prev;
-	int *curr;
-	int *temp;
-	curr = prev + (n + 1);
-
-	for (j = 0; j <= n; j++) { prev[j] = j; }
-
-	for ( i = 1; i <= m; i++) {
-
-		curr[0] = i;
-
-        for ( j = 1; j <= n; j++) {
-		    int			ins;
-		    int			del;
-		    int			sub;
-
-		    ins = curr[j - 1] + 1;
-		    del = prev[j] + 1;
-		    sub = prev[j - 1] + ((a[amin + i-1] == b[bmin + j-1]) ? 0 : 1);
-
-		    /* Take the one with minimum cost. */
-		    curr[j] = Min(ins, del);
-		    curr[j] = Min(curr[j], sub);
-		}
-
-		/* Swap current row with previous row. */
-		temp = curr;
-		curr = prev;
-		prev = temp;
-	}
-
-	/*
-	 * Because the final value was swapped from the previous row to the
-	 * current row, that's where we'll find it.
-	 */
-	distance = prev[n];
-
-    if(prev) { free( prev_alloc ); }
-
-    return distance;
-}
 
 int
 dist_mixed( const uint32_t *a, int alen, const uint32_t *b, int blen ) {
@@ -312,11 +151,11 @@ dist_mixed( const uint32_t *a, int alen, const uint32_t *b, int blen ) {
     int bmax = blen-1;
 
 if (1) {
-    while (amin <= amax && bmin <= bmax && a[amin] == b[bmin]) {
+    while ( amin <= amax && bmin <= bmax && a[amin] == b[bmin] ) {
         amin++;
         bmin++;
     }
-    while (amin <= amax && bmin <= bmax && a[amax] == b[bmax]) {
+    while ( amin <= amax && bmin <= bmax && a[amax] == b[bmax] ) {
         amax--;
         bmax--;
     }
@@ -327,18 +166,28 @@ if (1) {
 
 if ( 1 && ((amax - amin) < width) ) {
 
+
     int m = amax-amin + 1;
+
+    #ifdef _LEVBV_DEBUG
+    printf("amax: %u amin: %u bmax: %u bmin: %u \n", amax, amin, bmax, bmin );
+    char so[kDisplayWidth+1]; // working buffer for pBin
+    unsigned char co[2] = { 0 };
+    #endif
+
+
     // for codepoints in the low range we use fast table lookup
     int low_chars = _LEVBV_LOW_CHARS;
     static bv_bits posbits[_LEVBV_LOW_CHARS] = { 0 };
-    uint64_t i;
 
-    for (i=0; i < low_chars; i++) { posbits[i] = 0; }
+    int i;
+
+    for ( i=0; i < low_chars; i++ ) { posbits[i] = 0; }
 
     int ascii_chars = 0;
-    for (i=0; i < m; i++) {
-        if (a[i+amin] < low_chars) {
-            posbits[(unsigned int)a[i+amin]] |= 0x1ull << i;
+    for ( i=0; i < m; i++ ) {
+        if ( a[i+amin] < low_chars ) {
+            posbits[ a[i+amin] ] |= 0x1ull << i;
             ascii_chars++;
         }
     }
@@ -352,6 +201,7 @@ if ( 1 && ((amax - amin) < width) ) {
     hashi.ikeys = ikeys;
     hashi.bits  = bits;
 
+if (uni_chars > 0) {
     //int32_t i;
     for (i=0; i <= uni_chars; i++) {
         hashi.ikeys[i] = 0;
@@ -363,18 +213,30 @@ if ( 1 && ((amax - amin) < width) ) {
             hashi_setpos (&hashi, a[i+amin], i);
         }
     }
+}
 
     int diff = m;
-    bv_bits mask = 1 << (m - 1);
-    bv_bits VP   = masks[m - 1];
+    bv_bits mask = 0x1ull << (m - 1);
+    bv_bits VP   = masks[m-1];
     bv_bits VN   = 0;
 
+    #ifdef _LEVBV_DEBUG
+    printf("mask: %s \n", pBinFill(mask, so, '0'));
+    printf("VP: %s \n", pBinFill(VP, so, '0'));
+    #endif
+
     int n = bmax-bmin +1;
+    //printf("m: %u n: %u LEVBV_LOW_CHARS: %u \n", m, n, _LEVBV_LOW_CHARS );
 
     bv_bits y;
     for (i=0; i < n; i++){
         if (b[i+bmin] < _LEVBV_LOW_CHARS) {
-            y = posbits[(unsigned int)b[i+bmin]];
+            y = posbits[b[i+bmin]];
+
+            #ifdef _LEVBV_DEBUG
+            co[0] = b[i+bmin];
+            printf("i: %u posbit for char: %s %s\n", i, co, pBinFill(y,so,'0'));
+            #endif
         }
         else {
             y = hashi_getpos (&hashi, b[i+bmin]);
@@ -383,7 +245,7 @@ if ( 1 && ((amax - amin) < width) ) {
         bv_bits D0 = ((VP + (X & VP)) ^ VP) | X;
         bv_bits HN = VP & D0;
         bv_bits HP = VN | ~(VP|D0);
-        X  = (HP << 1) | 1;
+        X  = (HP << 1) | 0x1ull;
         VN = X & D0;
         VP = (HN << 1) | ~(X | D0);
         if (HP & mask) { diff++; }
@@ -396,65 +258,63 @@ else {
     int m = amax - amin + 1;
     int n = bmax - bmin + 1;
 
-	int i, j;
+    int i, j;
 
     int distance;
 
-	/*
-	if (m > MAX_LEVENSHTEIN_STRLEN ||
-		n > MAX_LEVENSHTEIN_STRLEN)
-	{
-      // croak("argument exceeds the maximum length of %d bytes", MAX_LEVENSHTEIN_STRLEN);
-        ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("levenshtein argument exceeds maximum length of %d characters",
-						MAX_LEVENSHTEIN_STRLEN)));
+    /*
+    // TODO: error handling friendly to calling programs
+    // see https://stackoverflow.com/questions/385975/error-handling-in-c-code
+    if (m > MAX_LEVENSHTEIN_STRLEN ||
+        n > MAX_LEVENSHTEIN_STRLEN)
+    {
+      // croak("argument exceeds the maximum length of %d characters", MAX_LEVENSHTEIN_STRLEN);
     }
     */
 
-	/* Previous and current rows of notional array. */
-	// char *name = malloc (strlen (str1) + strlen (str2) + 1);
-	// if (name == 0)
+    /* Previous and current rows of notional array. */
+    // TODO: error handling friendly to calling programs
+    // if (prev == 0)
     // fatal ("virtual memory exceeded");
 
     int *prev = (int *)malloc(2 * (n + 1) * sizeof(int));
-	int *prev_alloc;
-	prev_alloc = prev;
-	int *curr;
-	int *temp;
-	curr = prev + (n + 1);
+    int *prev_alloc;
+    prev_alloc = prev;
+    int *curr;
+    int *temp;
+    curr = prev + (n + 1);
 
-	for (j = 0; j <= n; j++) { prev[j] = j; }
+    for (j = 0; j <= n; j++) { prev[j] = j; }
 
-	for ( i = 1; i <= m; i++) {
+    for ( i = 1; i <= m; i++) {
 
-		curr[0] = i;
+        curr[0] = i;
 
         for ( j = 1; j <= n; j++) {
-		    int			ins;
-		    int			del;
-		    int			sub;
+            int            ins;
+            int            del;
+            int            sub;
 
-		    ins = curr[j - 1] + 1;
-		    del = prev[j] + 1;
-		    sub = prev[j - 1] + ((a[amin + i-1] == b[bmin + j-1]) ? 0 : 1);
+            ins = curr[j - 1] + 1;
+            del = prev[j] + 1;
+            sub = prev[j - 1] + ((a[amin + i-1] == b[bmin + j-1]) ? 0 : 1);
 
-		    /* Take the one with minimum cost. */
-		    curr[j] = Min(ins, del);
-		    curr[j] = Min(curr[j], sub);
-		}
+            /* Take the one with minimum cost. */
+            curr[j] = Min(ins, del);
+            curr[j] = Min(curr[j], sub);
+        }
 
-		/* Swap current row with previous row. */
-		temp = curr;
-		curr = prev;
-		prev = temp;
-	}
+        /* Swap current row with previous row. */
+        temp = curr;
+        curr = prev;
+        prev = temp;
+    }
 
-	/*
-	 * Because the final value was swapped from the previous row to the
-	 * current row, that's where we'll find it.
-	 */
-	distance = prev[n];
+    /*
+     * Because the final value was swapped from the previous row to the
+     * current row, that's where we'll find it.
+     */
+    distance = prev[n];
 
     if ( prev ) { free(prev_alloc); }
 

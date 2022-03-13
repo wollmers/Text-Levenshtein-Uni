@@ -18,7 +18,7 @@ dist_any (SV *s1, SV *s2)
 	if (SvUTF8 (s1) || SvUTF8 (s2) ) {
 // bool  is_utf8_string(const U8 *s, STRLEN len)
 // if(DO_UTF8(src) || DO_UTF8(dst))
-// is_utf8_invariant_string = ASCII
+// is_utf8_invariant_string // is ASCII
         STRLEN m;
         STRLEN n;
         // SvPVbyte

@@ -4,6 +4,7 @@ extern "C" {
 
 #ifndef _LEVBV_H
 #define _LEVBV_H
+#endif
 
 #include <stdint.h>
 
@@ -20,13 +21,10 @@ extern "C" {
     #define _LEVBV_WIDTH 32
 #endif
 
-int dist_utf8_ucs (char * a, uint32_t alen, char * b, uint32_t blen );
-int dist_hybrid (const uint32_t *a, int alen, const uint32_t *b, int blen) ;
-int dist_simple( const uint32_t *a, int alen, const uint32_t *b, int blen );
+int dist_utf8_ucs (char * a, int alen, char * b, int blen );
+//int dist_hybrid (const uint32_t *a, int alen, const uint32_t *b, int blen) ;
+//int dist_simple( const uint32_t *a, int alen, const uint32_t *b, int blen );
 int dist_mixed( const uint32_t *a, int alen, const uint32_t *b, int blen );
-
-
-#endif
 
 #ifdef __cplusplus
 }
