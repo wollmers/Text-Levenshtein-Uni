@@ -11,7 +11,7 @@ our $VERSION = '0.01';
 
 require Exporter;
 require DynaLoader;
-use Autoloader;
+#use Autoloader;
 
 our @ISA = qw(Exporter DynaLoader);
 our @EXPORT = qw( distance noop noutf);
