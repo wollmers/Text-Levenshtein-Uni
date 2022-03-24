@@ -97,6 +97,8 @@ my $examples2 = [
     'abcdefghijklmnopqrstuvwxyz012345678!9!"$%&/()=?ABCDEFGHIJKLMNOPQRSTUVWXYZ'],
   [ 'aaabcdefghijklmnopqrstuvwxyz012345678_9!"$%&/()=?ABCDEFGHIJKLMNOPQRSTUVYZZZ',
     'a!Z'],
+  [ 'allein ſchon ſollte die Aufnahme von Fremdwörtern in dem_ „Deutſchen Wort⸗',
+    'all_in ſchon ſoc__e die Aufnahme von Frendwörterm in dem. _Deulſ_hen Wort⸗'],
 ];
 
 # prefix/suffix optimisation
@@ -279,6 +281,61 @@ if (1) {
   }
 }
 
+# HINDI for testing combining characters
+if (1) {
+    my $string1 = 'राज्य';
+    my $string2 = 'उसकी';
+    my @base_lengths = (16, 32);
+
+    for my $base_length1 (@base_lengths) {
+        my $mult1 = int($base_length1/length($string1)) + 1;
+        my @a = split(//, $string1 x $mult1);
+        my $m = scalar @a;
+        for my $base_length2 (@base_lengths) {
+            my $mult2 = int($base_length2/length($string2)) + 1;
+            my @b = split(//,$string2 x $mult2);
+            my $n = scalar @b;
+
+            my $A = join('',@a);
+            my $B = join('',@b);
+
+            is(
+                &Text::Levenshtein::Uni::distance($A,$B),
+                distance($A, $B),
+                "[$string1 x $mult1] m: $m, [$string2 x $mult2] n: $n -> "
+                    . distance($A, $B)
+            );
+        }
+    }
+}
+
+# MEROITIC HIEROGLYPHIC LETTERs
+if (1) {
+    my $string1 = "\x{10980}\x{10981}\x{10983}";
+    my $string2 = "\x{10981}\x{10980}\x{10983}\x{10982}";
+    my @base_lengths = (16, 32);
+
+    for my $base_length1 (@base_lengths) {
+        my $mult1 = int($base_length1/length($string1)) + 1;
+        my @a = split(//,$string1 x $mult1);
+        my $m = scalar @a;
+        for my $base_length2 (@base_lengths) {
+            my $mult2 = int($base_length2/length($string2)) + 1;
+            my @b = split(//,$string2 x $mult2);
+            my $n = scalar @b;
+
+            my $A = join('',@a);
+            my $B = join('',@b);
+
+            is(
+                &Text::Levenshtein::Uni::distance($A,$B),
+                distance($A, $B),
+                "[$string1 x $mult1] m: $m, [$string2 x $mult2] n: $n -> "
+                    . distance($A, $B)
+            );
+        }
+    }
+}
 
 my @data3 = ([qw/a b d/ x 50], [qw/b a d c/ x 50]);
 
