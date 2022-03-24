@@ -69,7 +69,6 @@ my $examples1 = [
     're'],
   [ 'abcdefg_',
     '_bcdefgh'],
-
   [ 'aabbcc',
     'abc'],
   [ 'aaaabbbbcccc',
@@ -78,6 +77,8 @@ my $examples1 = [
     'abc'],
   [ 'ſhoereſhoſ',
     'Choerephon'],
+  [ 'राम',
+    'विष्णु', ],
 ];
 
 
